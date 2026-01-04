@@ -1,0 +1,6 @@
+{
+	"validation.required": "Field '{{.Field}}' wajib diisi",
+	"validation.email": "Field '{{.Field}}' harus berupa alamat email yang valid",
+	"error.user_not_found": "Pengguna '{{.username}}' tidak ditemukan",
+	"error.unavailable": "Layanan '{{.Resource}}' saat ini tidak tersedia"
+}

@@ -1,0 +1,6 @@
+{
+	"validation.required": "الحقل '{{.Field}}' مطلوب",
+	"validation.email": "يجب أن يكون الحقل '{{.Field}}' بريدًا إلكترونيًا صالحًا",
+	"error.user_not_found": "المستخدم '{{.username}}' غير موجود",
+	"error.unavailable": "الخدمة '{{.Resource}}' غير متاحة حاليًا"
+}
