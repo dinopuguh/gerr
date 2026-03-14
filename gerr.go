@@ -5,12 +5,31 @@ import (
 	"fmt"
 
 	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"golang.org/x/text/language"
 )
 
 // defaultBundle is the package-level i18n bundle used by Localize when a
-// bundle parameter is not provided. Call SetBundle at application startup to
+// bundle parameter is not provided. Call InitBundle at application startup to
 // configure it (for example after loading locale files).
 var defaultBundle *i18n.Bundle
+
+// InitBundle creates an i18n.Bundle with the given default language, loads the
+// provided locale files, and sets the result as the package-level bundle.
+//
+// This is the recommended single call to set up i18n at application startup.
+// Clients are responsible for providing all locale files, including translations
+// for any message keys used by external packages (e.g. errcodes).
+//
+// Example:
+//
+//	gerr.InitBundle(language.English, "locales/en.json", "locales/id.json")
+func InitBundle(defaultLang language.Tag, files ...string) error {
+	bundle, err := LoadBundleFromFiles(defaultLang, files...)
+	if err != nil {
+		return err
+	}
+	return SetBundle(bundle)
+}
 
 // SetBundle sets the package-level i18n bundle used by Localize.
 func SetBundle(b *i18n.Bundle) error {

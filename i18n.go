@@ -3,6 +3,7 @@ package gerr
 import (
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -12,43 +13,69 @@ import (
 )
 
 // LoadBundleFromFiles creates an i18n.Bundle with the given defaultLang (e.g. "en")
-// and loads all provided message files. Supported file formats: JSON and YAML.
-// The filenames' extensions (.json, .yaml, .yml) are used to determine the format.
+// and loads all provided paths. Each path may be a file or a directory; directories
+// are walked recursively and all .json, .yaml, and .yml files are loaded.
 //
 // Example:
 //
-//	bundle, err := LoadBundleFromFiles("en", "example/locales/en.json", "example/locales/id.json")
-func LoadBundleFromFiles(defaultLang language.Tag, files ...string) (*i18n.Bundle, error) {
+//	bundle, err := LoadBundleFromFiles(language.English, "locales/")
+//	bundle, err := LoadBundleFromFiles(language.English, "locales/en.json", "locales/id.json")
+func LoadBundleFromFiles(defaultLang language.Tag, paths ...string) (*i18n.Bundle, error) {
 	if defaultLang.String() == "" {
 		return nil, fmt.Errorf("defaultLang must be provided")
 	}
 
 	bundle := i18n.NewBundle(defaultLang)
-	// register json and yaml unmarshalers
 	bundle.RegisterUnmarshalFunc("json", json.Unmarshal)
 	bundle.RegisterUnmarshalFunc("yaml", yaml.Unmarshal)
 	bundle.RegisterUnmarshalFunc("yml", yaml.Unmarshal)
 
-	for _, f := range files {
-		if f == "" {
+	for _, p := range paths {
+		if p == "" {
 			continue
 		}
-		data, err := os.ReadFile(f)
-		if err != nil {
-			return nil, fmt.Errorf("read locale file %q: %w", f, err)
-		}
-
-		// ParseMessageFileBytes returns (*MessageFile, error). We only need the error.
-		// Use filepath.Base to ensure the extension is visible for format detection.
-		if _, err := bundle.ParseMessageFileBytes(data, filepath.Base(f)); err != nil {
-			// Some callers may pass full paths; ParseMessageFileBytes relies on the
-			// filename extension to choose the unmarshal func. Passing Base keeps it simple.
-			// If parsing fails, include the file path in the error for easier debugging.
-			return nil, fmt.Errorf("parse locale file %q: %w", f, err)
+		if err := loadPath(bundle, p); err != nil {
+			return nil, err
 		}
 	}
 
 	return bundle, nil
+}
+
+func loadPath(bundle *i18n.Bundle, path string) error {
+	info, err := os.Stat(path)
+	if err != nil {
+		return fmt.Errorf("stat locale path %q: %w", path, err)
+	}
+
+	if !info.IsDir() {
+		return loadFile(bundle, path)
+	}
+
+	return filepath.WalkDir(path, func(p string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			return nil
+		}
+		ext := filepath.Ext(p)
+		if ext != ".json" && ext != ".yaml" && ext != ".yml" {
+			return nil
+		}
+		return loadFile(bundle, p)
+	})
+}
+
+func loadFile(bundle *i18n.Bundle, path string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("read locale file %q: %w", path, err)
+	}
+	if _, err := bundle.ParseMessageFileBytes(data, filepath.Base(path)); err != nil {
+		return fmt.Errorf("parse locale file %q: %w", path, err)
+	}
+	return nil
 }
 
 func localizeMessage(lang string, key string, args map[string]any) (string, error) {

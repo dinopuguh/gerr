@@ -1,6 +1,6 @@
 {
-	"validation.required": "The field '{{.Field}}' is required",
-	"validation.email": "The field '{{.Field}}' must be a valid email address",
 	"error.user_not_found": "User '{{.username}}' not found",
-	"error.unavailable": "Service '{{.Resource}}' is currently unavailable"
+	"error.unavailable": "Service '{{.Resource}}' is currently unavailable",
+	"validation.required": "The field '{{.Field}}' is required",
+	"validation.email": "The field '{{.Field}}' must be a valid email address"
 }
