@@ -1,0 +1,15 @@
+# Go build output
+/gerr
+/cmd/gerr/gerr
+
+# Debug output from gerr gen when formatting fails
+gerr_gen_debug.go
+
+# Go test cache and coverage
+*.test
+*.out
+coverage.html
+
+# OS
+.DS_Store
+Thumbs.db
