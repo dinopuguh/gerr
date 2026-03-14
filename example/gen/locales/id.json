@@ -1,0 +1,10 @@
+{
+	"error.invalid_input": "Nilai tidak valid untuk kolom '{{.field}}'",
+	"error.service_unavailable": "Layanan sementara tidak tersedia, silakan coba lagi nanti",
+	"error.unauthorized": "Anda tidak memiliki izin untuk melakukan tindakan ini",
+	"error.user_not_found": "Pengguna '{{.username}}' tidak ditemukan",
+	"validation.email": "Kolom '{{.Field}}' harus berupa alamat email yang valid",
+	"validation.max": "Kolom '{{.Field}}' maksimal {{.Param}} karakter",
+	"validation.min": "Kolom '{{.Field}}' minimal {{.Param}} karakter",
+	"validation.required": "Kolom '{{.Field}}' wajib diisi"
+}

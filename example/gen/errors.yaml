@@ -1,0 +1,50 @@
+package: apierrors
+
+validators:
+  required:
+    en: "The field '{{.Field}}' is required"
+    id: "Kolom '{{.Field}}' wajib diisi"
+  email:
+    en: "The field '{{.Field}}' must be a valid email address"
+    id: "Kolom '{{.Field}}' harus berupa alamat email yang valid"
+  min:
+    en: "The field '{{.Field}}' must be at least {{.Param}} characters"
+    id: "Kolom '{{.Field}}' minimal {{.Param}} karakter"
+  max:
+    en: "The field '{{.Field}}' must be at most {{.Param}} characters"
+    id: "Kolom '{{.Field}}' maksimal {{.Param}} karakter"
+
+errors:
+  - name: UserNotFound
+    code: USER-001
+    key: error.user_not_found
+    http: 404
+    args: [username]
+    messages:
+      en: "User '{{.username}}' not found"
+      id: "Pengguna '{{.username}}' tidak ditemukan"
+
+  - name: Unauthorized
+    code: AUTH-001
+    key: error.unauthorized
+    http: 401
+    messages:
+      en: "You are not authorized to perform this action"
+      id: "Anda tidak memiliki izin untuk melakukan tindakan ini"
+
+  - name: InvalidInput
+    code: INPUT-001
+    key: error.invalid_input
+    http: 422
+    args: [field]
+    messages:
+      en: "Invalid value for field '{{.field}}'"
+      id: "Nilai tidak valid untuk kolom '{{.field}}'"
+
+  - name: ServiceUnavailable
+    code: SVC-001
+    key: error.service_unavailable
+    http: 503
+    messages:
+      en: "Service is temporarily unavailable, please try again later"
+      id: "Layanan sementara tidak tersedia, silakan coba lagi nanti"

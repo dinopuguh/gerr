@@ -1,0 +1,10 @@
+{
+	"error.invalid_input": "Invalid value for field '{{.field}}'",
+	"error.service_unavailable": "Service is temporarily unavailable, please try again later",
+	"error.unauthorized": "You are not authorized to perform this action",
+	"error.user_not_found": "User '{{.username}}' not found",
+	"validation.email": "The field '{{.Field}}' must be a valid email address",
+	"validation.max": "The field '{{.Field}}' must be at most {{.Param}} characters",
+	"validation.min": "The field '{{.Field}}' must be at least {{.Param}} characters",
+	"validation.required": "The field '{{.Field}}' is required"
+}
