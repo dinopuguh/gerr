@@ -298,7 +298,7 @@ gerr gen -schema - < errors.yaml   # read from stdin
 | `-schema-url` | — | URL to fetch YAML schema from (e.g. raw GitHub URL) |
 | `-out` | `.` | Output directory for generated source files |
 | `-locales` | `locales` | Output directory for locale JSON files |
-| `-lang` | `go` | Target language (`go`) |
+| `-lang` | `go` | Target language (`go`, `typescript`) |
 
 One of `-schema` or `-schema-url` is required.
 
@@ -335,9 +335,27 @@ errors:
     messages:
       en: "You are not authorized to perform this action"
       id: "Anda tidak memiliki izin untuk melakukan tindakan ini"
+
+  - name: ServiceUnavailable
+    code: SVC-001
+    key: error.service_unavailable
+    http: 503
+    retryable: true   # explicit override; omit to use the default
+    messages:
+      en: "Service is temporarily unavailable"
 ```
 
 The `validators` section is optional. When present, `gerr gen` merges `validation.<tag>` keys into the locale files automatically — no manual locale files needed for validator errors.
+
+**`retryable` field:**
+
+| Condition | Default |
+|-----------|---------|
+| HTTP 5xx  | `true`  |
+| HTTP 4xx  | `false` |
+| explicit `retryable: true/false` | overrides the default |
+
+Omit the field to apply the default. Set it explicitly only when you need to deviate (e.g. a 4xx that the client should retry, or a 5xx that it should not).
 
 **Run the generator:**
 
@@ -363,42 +381,21 @@ const (
 
 func UserNotFound(username string, opts ...gerr.Option) error {
     return gerr.New(CodeUserNotFound, "error.user_not_found", http.StatusNotFound,
-        append([]gerr.Option{gerr.WithArgs(map[string]any{"username": username})}, opts...)...,
+        append([]gerr.Option{gerr.WithArgs(map[string]any{"username": username}), gerr.WithRetryable(false)}, opts...)...,
     )
 }
 
 func Unauthorized(opts ...gerr.Option) error {
-    return gerr.New(CodeUnauthorized, "error.unauthorized", http.StatusUnauthorized, opts...)
+    return gerr.New(CodeUnauthorized, "error.unauthorized", http.StatusUnauthorized,
+        append([]gerr.Option{gerr.WithRetryable(false)}, opts...)...,
+    )
 }
 ```
+
+`gerr.WithRetryable` is always emitted — `false` for 4xx, `true` for 5xx — unless overridden in the schema.
 
 The generator also writes or merges locale JSON files (one per language tag found in `messages`) into the `-locales` directory. Existing keys are preserved; schema keys are added or overwritten.
 
-**Adding a new language backend:**
-
-Implement `spec.Generator` in `cmd/gerr/lang/` and register it in `cmd/gerr/main.go`:
-
-```go
-// cmd/gerr/lang/typescript.go
-package lang
-
-type TsGenerator struct{}
-
-func (g *TsGenerator) Lang() string { return "typescript" }
-func (g *TsGenerator) Generate(schema spec.Schema, opts spec.GenOptions) error {
-    // emit .ts files
-}
-```
-
-```go
-// cmd/gerr/main.go
-var generators = map[string]spec.Generator{
-    "go":         &lang.GoGenerator{},
-    "typescript": &lang.TsGenerator{},
-}
-```
-
-Then run: `gerr gen -schema errors.yaml -lang typescript`
 
 Contributing and license
 ------------------------

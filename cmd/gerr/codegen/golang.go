@@ -107,9 +107,9 @@ func {{ .Name }}({{ argsParam .Args }}opts ...gerr.Option) error {
 		"{{ .Key }}",
 		{{ httpStatus .HTTP }},
 		{{ if .Args -}}
-		append([]gerr.Option{gerr.WithArgs(map[string]any{ {{ argsMap .Args }} })}, opts...)...,
+		append([]gerr.Option{gerr.WithArgs(map[string]any{ {{ argsMap .Args }} }), gerr.WithRetryable({{ retryable . }})}, opts...)...,
 		{{- else -}}
-		opts...,
+		append([]gerr.Option{gerr.WithRetryable({{ retryable . }})}, opts...)...,
 		{{- end }}
 	)
 }
@@ -148,6 +148,12 @@ func (g *Go) generateGoFile(schema spec.Schema, opts spec.GenOptions) error {
 				parts[i] = fmt.Sprintf(`"%s": %s`, a, a)
 			}
 			return strings.Join(parts, ", ")
+		},
+		"retryable": func(e spec.Error) bool {
+			if e.Retryable != nil {
+				return *e.Retryable
+			}
+			return e.HTTP >= 500
 		},
 	}
 
