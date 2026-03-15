@@ -21,7 +21,7 @@ func UserNotFound(username string, opts ...gerr.Option) error {
 		CodeUserNotFound,
 		"error.user_not_found",
 		http.StatusNotFound,
-		append([]gerr.Option{gerr.WithArgs(map[string]any{"username": username})}, opts...)...,
+		append([]gerr.Option{gerr.WithArgs(map[string]any{"username": username}), gerr.WithRetryable(false)}, opts...)...,
 	)
 }
 
@@ -31,7 +31,7 @@ func Unauthorized(opts ...gerr.Option) error {
 		CodeUnauthorized,
 		"error.unauthorized",
 		http.StatusUnauthorized,
-		opts...,
+		append([]gerr.Option{gerr.WithRetryable(false)}, opts...)...,
 	)
 }
 
@@ -41,7 +41,7 @@ func InvalidInput(field string, opts ...gerr.Option) error {
 		CodeInvalidInput,
 		"error.invalid_input",
 		http.StatusUnprocessableEntity,
-		append([]gerr.Option{gerr.WithArgs(map[string]any{"field": field})}, opts...)...,
+		append([]gerr.Option{gerr.WithArgs(map[string]any{"field": field}), gerr.WithRetryable(false)}, opts...)...,
 	)
 }
 
@@ -51,6 +51,6 @@ func ServiceUnavailable(opts ...gerr.Option) error {
 		CodeServiceUnavailable,
 		"error.service_unavailable",
 		http.StatusServiceUnavailable,
-		opts...,
+		append([]gerr.Option{gerr.WithRetryable(true)}, opts...)...,
 	)
 }

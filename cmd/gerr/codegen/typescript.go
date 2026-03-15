@@ -17,6 +17,7 @@ export interface GerrError {
   code: string;
   messageKey: string;
   httpStatus: number;
+  retryable: boolean;
   args?: Record<string, unknown>;
 }
 
@@ -24,9 +25,10 @@ function newError(
   code: string,
   messageKey: string,
   httpStatus: number,
+  retryable: boolean,
   args?: Record<string, unknown>,
 ): GerrError {
-  return { code, messageKey, httpStatus, ...(args !== undefined ? { args } : {}) };
+  return { code, messageKey, httpStatus, retryable, ...(args !== undefined ? { args } : {}) };
 }
 
 // Error code constants.
@@ -35,10 +37,11 @@ export const Codes = {
   {{ .Name }}: "{{ .Code }}",
 {{ end -}}
 } as const;
+
 {{ range .Schema.Errors }}
 // {{ .Name }} creates a {{ .Key }} error.
 export function {{ .Name }}({{ argsParam .Args }}): GerrError {
-  return newError(Codes.{{ .Name }}, "{{ .Key }}", {{ .HTTP }}{{ if .Args }}, { {{ argsObj .Args }} }{{ end }});
+  return newError(Codes.{{ .Name }}, "{{ .Key }}", {{ .HTTP }}, {{ retryable . }}{{ if .Args }}, { {{ argsObj .Args }} }{{ end }});
 }
 {{ end }}`
 
@@ -69,6 +72,18 @@ func (g *TypeScript) generateTSFile(schema spec.Schema, opts spec.GenOptions) er
 				parts[i] = a
 			}
 			return strings.Join(parts, ", ")
+		},
+		"retryable": func(e spec.Error) string {
+			if e.Retryable != nil {
+				if *e.Retryable {
+					return "true"
+				}
+				return "false"
+			}
+			if e.HTTP >= 500 {
+				return "true"
+			}
+			return "false"
 		},
 	}
 
